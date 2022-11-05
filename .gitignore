@@ -1,4 +1,6 @@
 out
 
+*.dat
+
 .vs
 .vscode
