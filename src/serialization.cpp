@@ -1,4 +1,5 @@
 #include "jbt/serialization.hpp"
+#include "jbt/tag.hpp"
 #include <iostream>
 
 namespace jbt {
@@ -49,13 +50,59 @@ namespace jbt {
 		input.read(reinterpret_cast<char*>(&result), sizeof(double));
 	}
 
+	void read_tag_type(std::istream& input, tag_type& result) {
+		uint8_t id;
+		read_ubyte(input, id);
+		result = static_cast<tag_type>(id);
+	}
+
+	void read_tag_map(std::istream& input, tag_map& result) {
+		uint16_t size;
+		read_ushort(input, size);
+
+		for (int i = 1; i <= size; ++i) {
+			// read name
+			uint8_t name_size;
+			read_ubyte(input, name_size);
+
+			std::string name;
+			name.resize(name_size);
+
+			input.read(name.data(), name_size);
+
+			// read tag type
+			tag_type type;
+			read_tag_type(input, type);
+
+			// read tag payload
+			tag* a_tag = create_empty_tag(type);
+			a_tag->read(input);
+
+			result[name] = a_tag;
+		}
+	}
+
+	void read_tag_list(std::istream& input, tag_list& result) {
+		uint32_t size;
+		read_uint(input, size);
+
+		result.resize(size);
+
+		for (int i = 0; i < size; ++i) {
+			tag_type type;
+			read_tag_type(input, type);
+
+			tag* a_tag = create_empty_tag(type);
+			a_tag->read(input);
+		}
+	}
+
 	void write_bool(std::ostream& output, const bool& value) {
 		output.write(reinterpret_cast<const char*>(&value), sizeof(bool));
 	}
 
 	void write_string(std::ostream& output, const std::string& value) {
 		size_t size = value.size();
-		assert(size <= 65535 && "String size is too big. Maximum size is 65535");
 		
 		// write string size
 		write_ushort(output, static_cast<uint16_t>(size));
@@ -104,5 +151,40 @@ namespace jbt {
 		output.write(reinterpret_cast<const char*>(&value), sizeof(double));
 	}
 
+	void write_tag_type(std::ostream& output, const tag_type& value) {
+		write_ubyte(output, static_cast<uint8_t>(value));
+	}
+
+	void write_tag_map(std::ostream& output, const tag_map& value) {
+		const size_t size = value.size();
+		assert(size <= 65535 && "Maximum number of tags in an object is 65535");
+
+		write_ushort(output, static_cast<uint16_t>(size));
+
+		for (const auto& [name, a_tag] : value) {
+			assert(a_tag != nullptr, "Null tag is not allowed");
+
+			// write name
+			uint8_t name_size = static_cast<uint8_t>(name.size());
+
+			write_ubyte(output, name_size);
+			output.write(name.c_str(), name_size);
+
+			// write tag type
+			write_tag_type(output, a_tag->get_type());
+
+			// write tag payload
+			a_tag->write(output);
+		}
+	}
+
+	void write_tag_list(std::ostream& output, const tag_list& value) {
+		write_uint(output, value.size());
+
+		for (const auto& a_tag : value) {
+			write_tag_type(output, a_tag->get_type());
+			a_tag->write(output);
+		}
+	}
 }
 

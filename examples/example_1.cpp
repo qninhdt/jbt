@@ -1,22 +1,23 @@
 #include <jbt/jbt.hpp>
 #include <iostream>
-#include <nlohmann/json.hpp>
-
-using json = nlohmann::json;
 
 int main() {
-    std::ofstream out("D:/github/jbt/lmao.dat");
-    jbt::write_string(out, "1234567890123");
-    jbt::write_string(out, "abc");
-    jbt::write_string(out, "1dsdsadsad0123");
-    out.close();
+    std::ofstream out("D:/github/jbt/lmao.dat", std::ios_base::binary | std::ios_base::out);
     
-    jbt::ushort_tag tag;
-    std::ifstream f("example.json");
-    json data = json::parse(f);
+    {
+        jbt::list_tag list;
+        auto a = new uint32_t[1000000];
+        for (int i = 0; i < 1000000; ++i) {
+           //list.add_uint(i);
+           a[i] = i;
+        }
+
+        list.write(out);
+    }
+   
+    out.close();
+    while (1);
     std::ifstream in("D:/github/jbt/lmao.dat");
-    std::string s;
-    jbt::read_string(in, s);
-    std::cout << s.size() << ' ' << s;
+
     in.close();
 }

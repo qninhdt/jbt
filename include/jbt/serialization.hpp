@@ -17,6 +17,8 @@ namespace jbt {
 	void read_ulong(std::istream& input, uint64_t& result);
 	void read_float(std::istream& input, float& result);
 	void read_double(std::istream& input, double& result);
+	void read_tag_map(std::istream& input, tag_map& result);
+	void read_tag_list(std::istream& input, tag_list& result);
 
 	void write_bool(std::ostream& output, const bool& value);
 	void write_string(std::ostream& output, const std::string& value);
@@ -30,7 +32,8 @@ namespace jbt {
 	void write_ulong(std::ostream& output, const uint64_t& value);
 	void write_float(std::ostream& output, const float& value);
 	void write_double(std::ostream& output, const double& value);
-
+	void write_tag_map(std::ostream& output, const tag_map& value);
+	void write_tag_list(std::ostream& output, const tag_list& value);
 }
 
 #endif // !JBT_SERIALIZATION_H

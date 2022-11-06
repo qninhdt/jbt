@@ -5,14 +5,12 @@ project(jbt)
 set(JBT_HEADERS
 	"include/jbt/jbt.hpp"
 	"include/jbt/internal.hpp"
-	"include/jbt/object.hpp"
 	"include/jbt/tag.hpp"
 	"include/jbt/serialization.hpp"
 )
 
 set(JBT_SOURCES
 	"src/jbt.cpp"
-	"src/object.cpp"
 	"src/tag.cpp"
 	"src/serialization.cpp"
 )
