@@ -71,10 +71,14 @@ namespace jbt {
 		double& as_double();
 		std::string& as_string();
 
+		void to_string(std::ostream& out) const;
+		
 	private:
 
 		friend class serializer;
-
+		
+		void to_string(std::ostream& out, const int32_t& tabs) const;
+		
 		union data_t {
 			bool          v_bool;
 			int8_t        v_byte;
@@ -94,6 +98,9 @@ namespace jbt {
 
 		tag_type type;
 	};
+
+	std::ostream& operator<<(std::ostream& os, const tag_type& type);
+	std::ostream& operator<<(std::ostream& os, const tag& a_tag);
 }
 
 #endif // !JBT_TAG_H

@@ -55,7 +55,7 @@ namespace jbt {
 
 	tag& tag::operator=(const tag& other) {
 		type = other.type;
-		std::cout << "copy full tag\n";
+
 		switch (other.type) {
 		case tag_type::LIST:
 			data.v_list = new list_t(*other.data.v_list);
@@ -101,7 +101,7 @@ namespace jbt {
 
 	tag::tag(const tag& other) {
 		type = other.type;
-		std::cout << "copy\n";
+
 		switch (other.type) {
 		case tag_type::LIST:
 			data.v_list = new list_t(*other.data.v_list);
@@ -282,5 +282,88 @@ namespace jbt {
 			delete data.v_object;
 			break;
 		}
+	}
+
+	void tag::to_string(std::ostream& out) const {
+		to_string(out, 0);
+	}
+
+	void tag::to_string(std::ostream& out, const int32_t& tabs) const {
+		std::string tab = "";
+		for (int i=0;i<tabs;++i) tab += "    ";
+		std::string tab1 = tab + "    ";
+
+		int i = 0;
+
+		switch (type) {
+		case jbt::tag_type::BOOL:
+			out << (data.v_bool ? "true" : "false");
+			break;
+		case jbt::tag_type::LIST:
+			out << "[\n";
+			for (int i = 0; i < data.v_list->size(); ++i) {
+				out << tab1;
+				(*data.v_list)[i].to_string(out, tabs + 1);
+				out << ((i == data.v_list->size() - 1) ? "\n" : ",\n");
+			}
+			out << tab << "]";
+			break;
+		case jbt::tag_type::STRING:
+			out << '"' << *data.v_string << '"';
+			break;
+		case jbt::tag_type::OBJECT:
+			out << "{\n";
+
+			for (auto& [name, a_tag] : *data.v_object) {
+				out << tab1 << name << ": ";
+				a_tag.to_string(out, tabs + 1);
+				out << ((i == data.v_object->size() - 1) ? "\n" : ",\n");
+				++i;
+			}
+			out << tab << "}";
+			break;
+		case jbt::tag_type::BYTE:
+			out << int32_t(data.v_byte) << "b";
+			break;
+		case jbt::tag_type::UBYTE:
+			out << uint32_t(data.v_ubyte) << "ub";
+			break;
+		case jbt::tag_type::SHORT:
+			out << data.v_short << "s";
+			break;
+		case jbt::tag_type::USHORT:
+			out << data.v_ushort << "us";
+			break;
+		case jbt::tag_type::INT:
+			out << data.v_int << "i";
+			break;
+		case jbt::tag_type::UINT:
+			out << data.v_uint << "ui";
+			break;
+		case jbt::tag_type::LONG:
+			out << data.v_long << "l";
+			break;
+		case jbt::tag_type::ULONG:
+			out << data.v_ulong << "ul";
+			break;
+		case jbt::tag_type::FLOAT:
+			out << data.v_float << "f";
+			break;
+		case jbt::tag_type::DOUBLE:
+			out << data.v_double << "d";
+			break;
+		default:
+			break;
+		}
+	}
+
+	std::ostream& operator<<(std::ostream& os, const tag_type& type) {
+		
+		return os;
+	}
+
+	std::ostream& operator<<(std::ostream& os, const tag& a_tag) {
+		a_tag.to_string(os);
+		return os;
 	}
 }
