@@ -4,6 +4,7 @@
 #include <cassert>
 #include <fstream>
 #include <iostream>
+#include <string>
 #include <map>
 #include <vector>
 
@@ -11,8 +12,8 @@ namespace jbt {
 
 	class tag;
 
-	using tag_map = std::map<std::string, tag*>;
-	using tag_list = std::vector<tag*>;
+	using object_t = std::map<std::string, tag>;
+	using list_t = std::vector<tag>;
 
 	enum class tag_type : uint8_t {
 		NONE,

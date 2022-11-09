@@ -2,7 +2,7 @@
 #define JBT_H
 
 #include "jbt/internal.hpp"
-#include "jbt/serialization.hpp"
+#include "jbt/serializer.hpp"
 #include "jbt/tag.hpp"
 
 namespace jbt {

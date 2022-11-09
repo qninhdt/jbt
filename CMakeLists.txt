@@ -6,13 +6,13 @@ set(JBT_HEADERS
 	"include/jbt/jbt.hpp"
 	"include/jbt/internal.hpp"
 	"include/jbt/tag.hpp"
-	"include/jbt/serialization.hpp"
+	"include/jbt/serializer.hpp"
 )
 
 set(JBT_SOURCES
 	"src/jbt.cpp"
 	"src/tag.cpp"
-	"src/serialization.cpp"
+	"src/serializer.cpp"
 )
 
 add_library(jbt
