@@ -139,10 +139,19 @@ namespace jbt {
 		case jbt::tag_type::DOUBLE:
 			read_double(input, result.data.v_double);
 			break;
+		case jbt::tag_type::BYTE_ARRAY:
+			read_byte_array(input, *result.data.v_byte_array);
+			break;
 		default:
 			assert(false && "Unknown tag type");
 			break;
 		}
+	}
+
+	void serializer::read_byte_array(std::istream& input, byte_array_t& result) {
+		read_uint(input, result.size);
+		result.data = new int8_t[result.size];
+		input.read(reinterpret_cast<char*>(result.data), result.size);
 	}
 
 	void serializer::write_bool(std::ostream& output, const bool& value) {
@@ -281,10 +290,18 @@ namespace jbt {
 		case jbt::tag_type::DOUBLE:
 			write_double(output, value.data.v_double);
 			break;
+		case tag_type::BYTE_ARRAY:
+			write_byte_array(output, *value.data.v_byte_array);
+			break;
 		default:
 			assert(false && "Unknown tag type");
 			break;
 		}
+	}
+
+	void serializer::write_byte_array(std::ostream& output, const byte_array_t& value) {
+		write_uint(output, value.size);
+		output.write(reinterpret_cast<char*>(value.data), value.size);
 	}
 }
 

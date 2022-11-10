@@ -24,6 +24,7 @@ namespace jbt {
 		static void read_list(std::istream& input, list_t& result);
 		static void read_tag(std::istream& input, tag& result);
 		static void read_tag_type(std::istream& input, tag_type& result);
+		static void read_byte_array(std::istream& input, byte_array_t& result);
 
 		static void write_bool(std::ostream& output, const bool& value);
 		static void write_string(std::ostream& output, const std::string& value);
@@ -41,6 +42,7 @@ namespace jbt {
 		static void write_list(std::ostream& output, const list_t& value);
 		static void write_tag(std::ostream& output, const tag& value);
 		static void write_tag_type(std::ostream& output, const tag_type& value);
+		static void write_byte_array(std::ostream& output, const byte_array_t& value);
 	};
 }
 

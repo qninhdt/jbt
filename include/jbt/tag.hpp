@@ -44,7 +44,8 @@ namespace jbt {
 		JBT_TAG_METHOD(float, float)
 		JBT_TAG_METHOD(double, double)
 		JBT_TAG_METHOD(string, std::string)
-		JBT_TAG_METHOD(tag, tag);
+		JBT_TAG_METHOD(tag, tag)
+		JBT_TAG_METHOD(byte_array, byte_array_t)
 
 		void set_string(const std::string& index, std::string&& value);
 		void set_string(const uint32_t& index, std::string&& value);
@@ -70,6 +71,7 @@ namespace jbt {
 		float& as_float();
 		double& as_double();
 		std::string& as_string();
+		byte_array_t& as_byte_array();
 
 		void to_string(std::ostream& out) const;
 		
@@ -94,6 +96,7 @@ namespace jbt {
 			object_t*     v_object;
 			list_t*       v_list;
 			std::string*  v_string;
+			byte_array_t* v_byte_array;
 		} data;
 
 		tag_type type;

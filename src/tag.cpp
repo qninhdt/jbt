@@ -1,5 +1,6 @@
 #include "jbt/tag.hpp"
 #include "jbt/serializer.hpp"
+#include <iomanip>
 
 #define TYPE_CHECK(tag, correct_type) \
 	assert(tag##.type == tag_type::##correct_type && "Wrong tag type")
@@ -66,6 +67,9 @@ namespace jbt {
 		case tag_type::OBJECT:
 			data.v_object = new object_t(*other.data.v_object);
 			break;
+		case tag_type::BYTE_ARRAY:
+			data.v_byte_array = new byte_array_t(*other.data.v_byte_array);
+			break;
 		default:
 			data = other.data;
 		}
@@ -89,6 +93,9 @@ namespace jbt {
 			break;
 		case tag_type::OBJECT:
 			data.v_object = new object_t();
+			break;
+		case tag_type::BYTE_ARRAY:
+			data.v_byte_array = new byte_array_t();
 			break;
 		default:
 			data.v_ulong = 0; // fill 8 bytes = 0
@@ -129,6 +136,10 @@ namespace jbt {
 		data.v_string = new std::string(std::move(value));
 	}
 
+	tag::tag(const byte_array_t& value) : type(tag_type::BYTE_ARRAY) {
+		data.v_byte_array = new byte_array_t(value);
+	}
+
 	tag& tag::get_tag(const std::string& name) const {
 		TYPE_CHECK((*this), OBJECT);
 		auto&& it = data.v_object->find(name);
@@ -154,7 +165,7 @@ namespace jbt {
 		TYPE_CHECK((*this), OBJECT);
 		tag& a_tag = get_tag(name);
 		TYPE_CHECK(a_tag, STRING);
-		return *a_tag.data.v_string;
+		return a_tag.as_string();
 	}
 
 	std::string& tag::as_string() {
@@ -172,6 +183,18 @@ namespace jbt {
 		TYPE_CHECK((*this), OBJECT);
 		assert(value.size() <= 65535 && "Maximum length of string is 65535");
 		set_tag(name, tag(std::move(value)));
+	}
+
+	byte_array_t& tag::get_byte_array(const std::string& name) const {
+		TYPE_CHECK((*this), OBJECT);
+		tag& a_tag = get_tag(name);
+		TYPE_CHECK(a_tag, BYTE_ARRAY);
+		return a_tag.as_byte_array();
+	}
+
+	void tag::set_byte_array(const std::string& name, const byte_array_t& value) {
+		TYPE_CHECK((*this), OBJECT);
+		set_tag(name, tag(value));
 	}
 
 	JBT_TAG_METHOD_IMPL(bool, bool, BOOL)
@@ -247,6 +270,18 @@ namespace jbt {
 		return a_tag.as_string();
 	}
 
+	void tag::set_byte_array(const uint32_t& index, const byte_array_t& value) {
+		TYPE_CHECK((*this), LIST);
+		set_tag(index, new tag(value));
+	}
+
+	byte_array_t& tag::get_byte_array(const uint32_t& index) const {
+		TYPE_CHECK((*this), LIST);
+		tag& a_tag = get_tag(index);
+		assert(index < data.v_list->size() && "Out of bounds");
+		return a_tag.as_byte_array();
+	}
+
 	void tag::add_tag(const tag& value) {
 		TYPE_CHECK((*this), LIST);
 		data.v_list->push_back(value);
@@ -267,6 +302,16 @@ namespace jbt {
 		TYPE_CHECK((*this), LIST);
 		STRING_CHECK(value);
 		add_tag({ std::move(value) });
+	}
+
+	void tag::add_byte_array(const byte_array_t& value) {
+		TYPE_CHECK((*this), LIST);
+		add_tag(tag(value));
+	}
+
+	byte_array_t& tag::as_byte_array() {
+		TYPE_CHECK((*this), BYTE_ARRAY);
+		return *data.v_byte_array;
 	}
 
 	tag::~tag() {
@@ -347,11 +392,14 @@ namespace jbt {
 			out << data.v_ulong << "ul";
 			break;
 		case jbt::tag_type::FLOAT:
-			out << data.v_float << "f";
+			out << std::setprecision(7) << data.v_float << "f";
 			break;
 		case jbt::tag_type::DOUBLE:
-			out << data.v_double << "d";
+			out << std::setprecision(14) << data.v_double << "d";
 			break;
+		case jbt::tag_type::BYTE_ARRAY:
+			out << "(" << data.v_byte_array->size << " ";
+			out << ((data.v_byte_array->size == 1) ? "byte" : "bytes") << ")";
 		default:
 			break;
 		}
