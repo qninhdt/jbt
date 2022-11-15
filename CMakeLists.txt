@@ -8,6 +8,7 @@ set(JBT_HEADERS
 	"include/jbt/tag.hpp"
 	"include/jbt/serializer.hpp"
 	"include/jbt/io.hpp"
+	"include/jbt/compression.hpp"
 )
 
 set(JBT_SOURCES
@@ -15,6 +16,7 @@ set(JBT_SOURCES
 	"src/tag.cpp"
 	"src/serializer.cpp"
 	"src/io.cpp"
+	"src/compression.cpp"
 )
 
 add_library(jbt

@@ -5,6 +5,7 @@
 #include "jbt/serializer.hpp"
 #include "jbt/tag.hpp"
 #include "jbt/io.hpp"
+#include "jbt/compression.hpp"
 
 namespace jbt {
 

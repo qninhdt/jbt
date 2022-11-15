@@ -28,7 +28,7 @@ void build_player(jbt::tag& player) {
     inventory.add_tag(std::move(sword));
     inventory.add_tag(std::move(dirt));
 
-    player.set_byte_array("avatar", { new int8_t[4*1024], 4*1024 });
+    player.set_byte_array("avatar", { new int8_t[4*1024*1024], 4*1024*1024 });
 
     player.set_string("name", "qninh");
     player.set_ushort("health", 100);
@@ -53,31 +53,13 @@ int main() {
         std::ofstream out("D:/github/jbt/lmao.dat", std::ios_base::binary | std::ios_base::out);
 
         jbt::tag player(jbt::tag_type::OBJECT);
-        jbt::omem_stream output;
 
         build_player(player);
 
-        tool->write_tag(output, player);
+        jbt::compress_tag(*tool, out, player);
 
-        // compress
-        size_t output_size = output.size();
-        auto max_compressed_size = LZ4_COMPRESSBOUND(output_size);
-
-        std::cout << "Compress " << output_size << " bytes - Max compressed size: " << max_compressed_size << " byte\n";
-
-        char* compressed_data = new char[max_compressed_size];
-        size_t compressed_size = LZ4_compress_default(output.buffer(), compressed_data, output_size, max_compressed_size);
-
-        std::cout << "Compressed size: " << compressed_size << '\n';
-
-        out.write(compressed_data, compressed_size);
-
-        delete[] compressed_data;
-        
         out.close();
     }
-
-    
 
     // decompress
     {
@@ -87,22 +69,11 @@ int main() {
         size_t compressed_size = in.tellg();
         in.seekg(0, std::ios::beg);
 
-        char* compressed_data = new char[compressed_size];
-        char* decompressed_data = new char[2 * 1024 * 1024]; // 2Mb
-
-        in.read(compressed_data, compressed_size);
-
-        int decompressed_size = LZ4_decompress_safe(compressed_data, decompressed_data, compressed_size, 2 * 1024 * 1024);
-        std::cout << "Decompressed size: " << decompressed_size << '\n';
-        jbt::imem_stream input(decompressed_data, decompressed_size);
-
         jbt::tag xplayer;
-        tool->read_tag(input, xplayer);
+
+        jbt::decompress_tag(*tool, in, xplayer, compressed_size, 8 * 1024 * 1024);
 
         std::cout << xplayer << '\n';
-
-        delete[] compressed_data;
-        delete[] decompressed_data;
 
         in.close();
     }
