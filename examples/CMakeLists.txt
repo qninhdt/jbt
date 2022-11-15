@@ -2,6 +2,7 @@ project(JBT_examples)
 
 set(JBT_EXAMPLES
 	"example_1.cpp"
+	"example_2.cpp"
 )
 
 

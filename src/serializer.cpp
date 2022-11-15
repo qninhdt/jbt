@@ -4,6 +4,22 @@
 
 namespace jbt {
 
+	void serializer_util::swap_2_bytes(char* number) {
+		std::swap(number[0], number[1]);
+	}
+
+	void serializer_util::swap_4_bytes(char* number) {
+		std::swap(number[0], number[3]);
+		std::swap(number[1], number[2]);
+	}
+
+	void serializer_util::swap_8_bytes(char* number) {
+		std::swap(number[0], number[7]);
+		std::swap(number[1], number[6]);
+		std::swap(number[2], number[5]);
+		std::swap(number[3], number[4]);
+	}
+
 	void serializer::read_bool(std::istream& input, bool& result) {
 		input.read(reinterpret_cast<char*>(&result), sizeof(bool));
 	}
@@ -24,24 +40,6 @@ namespace jbt {
 	}
 	void serializer::read_ubyte(std::istream& input, uint8_t& result) {
 		input.read(reinterpret_cast<char*>(&result), sizeof(uint8_t));
-	}
-	void serializer::read_short(std::istream& input, int16_t& result) {
-		input.read(reinterpret_cast<char*>(&result), sizeof(int16_t));
-	}
-	void serializer::read_ushort(std::istream& input, uint16_t& result) {
-		input.read(reinterpret_cast<char*>(&result), sizeof(uint16_t));
-	}
-	void serializer::read_int(std::istream& input, int32_t& result) {
-		input.read(reinterpret_cast<char*>(&result), sizeof(int32_t));
-	}
-	void serializer::read_uint(std::istream& input, uint32_t& result) {
-		input.read(reinterpret_cast<char*>(&result), sizeof(uint32_t));
-	}
-	void serializer::read_long(std::istream& input, int64_t& result) {
-		input.read(reinterpret_cast<char*>(&result), sizeof(int64_t));
-	}
-	void serializer::read_ulong(std::istream& input, uint64_t& result) {
-		input.read(reinterpret_cast<char*>(&result), sizeof(uint64_t));
 	}
 	void serializer::read_float(std::istream& input, float& result) {
 		input.read(reinterpret_cast<char*>(&result), sizeof(float));
@@ -143,6 +141,7 @@ namespace jbt {
 			read_byte_array(input, *result.data.v_byte_array);
 			break;
 		default:
+			std::cout << int(result.type) << '\n';
 			assert(false && "Unknown tag type");
 			break;
 		}
@@ -174,30 +173,6 @@ namespace jbt {
 
 	void serializer::write_ubyte(std::ostream& output, const uint8_t& value) {
 		output.write(reinterpret_cast<const char*>(&value), sizeof(uint8_t));
-	}
-
-	void serializer::write_short(std::ostream& output, const int16_t& value) {
-		output.write(reinterpret_cast<const char*>(&value), sizeof(int16_t));
-	}
-
-	void serializer::write_ushort(std::ostream& output, const uint16_t& value) {
-		output.write(reinterpret_cast<const char*>(&value), sizeof(uint16_t));
-	}
-
-	void serializer::write_int(std::ostream& output, const int32_t& value) {
-		output.write(reinterpret_cast<const char*>(&value), sizeof(int32_t));
-	}
-
-	void serializer::write_uint(std::ostream& output, const uint32_t& value) {
-		output.write(reinterpret_cast<const char*>(&value), sizeof(uint32_t));
-	}
-
-	void serializer::write_long(std::ostream& output, const int64_t& value) {
-		output.write(reinterpret_cast<const char*>(&value), sizeof(int64_t));
-	}
-
-	void serializer::write_ulong(std::ostream& output, const uint64_t& value) {
-		output.write(reinterpret_cast<const char*>(&value), sizeof(uint64_t));
 	}
 
 	void serializer::write_float(std::ostream& output, const float& value) {
@@ -302,6 +277,108 @@ namespace jbt {
 	void serializer::write_byte_array(std::ostream& output, const byte_array_t& value) {
 		write_uint(output, value.size);
 		output.write(reinterpret_cast<char*>(value.data), value.size);
+	}
+
+	void diff_endian_serializer::read_short(std::istream& input, int16_t& result) {
+		input.read(reinterpret_cast<char*>(&result), sizeof(int16_t));
+		serializer_util::swap_2_bytes(reinterpret_cast<char*>(&result));
+	}
+	void diff_endian_serializer::read_ushort(std::istream& input, uint16_t& result) {
+		input.read(reinterpret_cast<char*>(&result), sizeof(uint16_t));
+		serializer_util::swap_2_bytes(reinterpret_cast<char*>(&result));
+	}
+	void diff_endian_serializer::read_int(std::istream& input, int32_t& result) {
+		input.read(reinterpret_cast<char*>(&result), sizeof(int32_t));
+		serializer_util::swap_4_bytes(reinterpret_cast<char*>(&result));
+	}
+	void diff_endian_serializer::read_uint(std::istream& input, uint32_t& result) {
+		input.read(reinterpret_cast<char*>(&result), sizeof(uint32_t));
+		serializer_util::swap_4_bytes(reinterpret_cast<char*>(&result));
+	}
+	void diff_endian_serializer::read_long(std::istream& input, int64_t& result) {
+		input.read(reinterpret_cast<char*>(&result), sizeof(int64_t));
+		serializer_util::swap_8_bytes(reinterpret_cast<char*>(&result));
+	}
+	void diff_endian_serializer::read_ulong(std::istream& input, uint64_t& result) {
+		input.read(reinterpret_cast<char*>(&result), sizeof(uint64_t));
+		serializer_util::swap_8_bytes(reinterpret_cast<char*>(&result));
+	}
+	void diff_endian_serializer::write_short(std::ostream& output, const int16_t& value) {
+		int16_t xvalue = value;
+		serializer_util::swap_2_bytes(reinterpret_cast<char*>(&xvalue));
+		output.write(reinterpret_cast<const char*>(&xvalue), sizeof(int16_t));
+	}
+
+	void diff_endian_serializer::write_ushort(std::ostream& output, const uint16_t& value) {
+		int16_t xvalue = value;
+		serializer_util::swap_2_bytes(reinterpret_cast<char*>(&xvalue));
+		output.write(reinterpret_cast<const char*>(&xvalue), sizeof(uint16_t));
+	}
+
+	void diff_endian_serializer::write_int(std::ostream& output, const int32_t& value) {
+		int32_t xvalue = value;
+		serializer_util::swap_4_bytes(reinterpret_cast<char*>(&xvalue));
+		output.write(reinterpret_cast<const char*>(&xvalue), sizeof(int32_t));
+	}
+
+	void diff_endian_serializer::write_uint(std::ostream& output, const uint32_t& value) {
+		uint32_t xvalue = value;
+		serializer_util::swap_4_bytes(reinterpret_cast<char*>(&xvalue));
+		output.write(reinterpret_cast<const char*>(&xvalue), sizeof(uint32_t));
+	}
+
+	void diff_endian_serializer::write_long(std::ostream& output, const int64_t& value) {
+		int64_t xvalue = value;
+		serializer_util::swap_8_bytes(reinterpret_cast<char*>(&xvalue));
+		output.write(reinterpret_cast<const char*>(&xvalue), sizeof(int64_t));
+	}
+
+	void diff_endian_serializer::write_ulong(std::ostream& output, const uint64_t& value) {
+		uint64_t xvalue = value;
+		serializer_util::swap_8_bytes(reinterpret_cast<char*>(&xvalue));
+		output.write(reinterpret_cast<const char*>(&xvalue), sizeof(uint64_t));
+	}
+
+	void same_endian_serializer::read_short(std::istream& input, int16_t& result) {
+		input.read(reinterpret_cast<char*>(&result), sizeof(int16_t));
+	}
+	void same_endian_serializer::read_ushort(std::istream& input, uint16_t& result) {
+		input.read(reinterpret_cast<char*>(&result), sizeof(uint16_t));
+	}
+	void same_endian_serializer::read_int(std::istream& input, int32_t& result) {
+		input.read(reinterpret_cast<char*>(&result), sizeof(int32_t));
+	}
+	void same_endian_serializer::read_uint(std::istream& input, uint32_t& result) {
+		input.read(reinterpret_cast<char*>(&result), sizeof(uint32_t));
+	}
+	void same_endian_serializer::read_long(std::istream& input, int64_t& result) {
+		input.read(reinterpret_cast<char*>(&result), sizeof(int64_t));
+	}
+	void same_endian_serializer::read_ulong(std::istream& input, uint64_t& result) {
+		input.read(reinterpret_cast<char*>(&result), sizeof(uint64_t));
+	}
+	void same_endian_serializer::write_short(std::ostream& output, const int16_t& value) {
+		output.write(reinterpret_cast<const char*>(&value), sizeof(int16_t));
+	}
+
+	void same_endian_serializer::write_ushort(std::ostream& output, const uint16_t& value) {
+		output.write(reinterpret_cast<const char*>(&value), sizeof(uint16_t));
+	}
+
+	void same_endian_serializer::write_int(std::ostream& output, const int32_t& value) {
+		output.write(reinterpret_cast<const char*>(&value), sizeof(int32_t));
+	}
+
+	void same_endian_serializer::write_uint(std::ostream& output, const uint32_t& value) {
+		output.write(reinterpret_cast<const char*>(&value), sizeof(uint32_t));
+	}
+
+	void same_endian_serializer::write_long(std::ostream& output, const int64_t& value) {
+		output.write(reinterpret_cast<const char*>(&value), sizeof(int64_t));
+	}
+
+	void same_endian_serializer::write_ulong(std::ostream& output, const uint64_t& value) {
+		output.write(reinterpret_cast<const char*>(&value), sizeof(uint64_t));
 	}
 }
 

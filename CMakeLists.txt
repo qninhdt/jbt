@@ -7,12 +7,14 @@ set(JBT_HEADERS
 	"include/jbt/internal.hpp"
 	"include/jbt/tag.hpp"
 	"include/jbt/serializer.hpp"
+	"include/jbt/io.hpp"
 )
 
 set(JBT_SOURCES
 	"src/jbt.cpp"
 	"src/tag.cpp"
 	"src/serializer.cpp"
+	"src/io.cpp"
 )
 
 add_library(jbt
@@ -22,8 +24,8 @@ add_library(jbt
 
 target_include_directories(jbt PUBLIC "include")
 
-find_package(ZLIB REQUIRED)
-target_link_libraries(jbt PRIVATE ZLIB::ZLIB)
+find_package(lz4 CONFIG REQUIRED)
+target_link_libraries(jbt PUBLIC lz4::lz4)
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET jbt PROPERTY CXX_STANDARD 20)
