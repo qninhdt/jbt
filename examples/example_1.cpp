@@ -131,4 +131,5 @@ int main() {
 
     print_info(file);
 
+    file.close();
 }

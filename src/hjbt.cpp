@@ -201,7 +201,7 @@ namespace jbt {
             }
         }
 
-        m_out_stream->seekp((m_header_size + m_info_map[tag_id].first) * m_block_size, std::ios_base::beg);
+        m_out_stream->seekp((std::uint64_t) (m_header_size + m_info_map[tag_id].first) * m_block_size, std::ios_base::beg);
         m_out_stream->write(src_stream.buffer(), m_info_map[tag_id].second);
     }
 
@@ -224,7 +224,7 @@ namespace jbt {
         const auto ser = serializer::instance;
 
         // update size
-        m_out_stream->seekp(4 + 4 + 4, std::ios_base::beg);
+        m_out_stream->seekp((std::uint64_t) 4 + 4 + 4, std::ios_base::beg);
         ser->write_uint(*m_out_stream, m_size);
 
         // update info map
@@ -245,5 +245,13 @@ namespace jbt {
 
         m_out_stream->close();
         delete m_out_stream;
+    }
+
+    void hjbt_file::close() {
+        delete m_in_stream;
+    }
+
+    hjbt_file::~hjbt_file() {
+
     }
 }

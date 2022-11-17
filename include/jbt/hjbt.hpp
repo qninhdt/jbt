@@ -23,7 +23,10 @@ namespace jbt {
         hjbt_file();
         hjbt_file(const std::string& path);
 
+        ~hjbt_file();
+
         void open(const std::string& path);
+        void close();
 
         void read(const std::uint32_t& tag_id, tag& dst);
         void write(const std::uint32_t& tag_id, const tag& src);
