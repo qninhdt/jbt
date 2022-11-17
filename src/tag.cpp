@@ -80,6 +80,7 @@ namespace jbt {
 		data = other.data;
 		type = other.type;
 		other.data.v_long = 0;
+		other.type = tag_type::NONE;
 		return *this;
 	}
 
@@ -126,6 +127,7 @@ namespace jbt {
 
 	tag::tag(tag&& other) noexcept : data(other.data), type(other.type) {
 		other.data.v_long = 0;
+		other.type = tag_type::NONE;
 	}
 
 	tag::tag(const std::string& value) : type(tag_type::STRING) {
@@ -325,6 +327,12 @@ namespace jbt {
 			break;
 		case tag_type::OBJECT:
 			delete data.v_object;
+			break;
+		case tag_type::BYTE_ARRAY:
+			if (data.v_byte_array->is_owner) {
+				delete[] data.v_byte_array->data;
+				delete data.v_byte_array;
+			}
 			break;
 		}
 	}

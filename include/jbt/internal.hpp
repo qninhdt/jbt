@@ -18,6 +18,7 @@ namespace jbt {
 	struct byte_array_t {
 		int8_t* data;
 		uint32_t size;
+		bool is_owner;
 	};
 
 	enum class tag_type : uint8_t {

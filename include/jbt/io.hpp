@@ -34,7 +34,7 @@ namespace jbt {
 
         std::size_t capacity() const;
         std::size_t size() const;
-        const char* buffer() const;
+        char* buffer() const;
 
         void reserve(const std::size_t& new_capacity); 
         
@@ -51,7 +51,8 @@ namespace jbt {
         omem_stream();
         std::size_t capacity() const;
         std::size_t size() const;
-        const char* buffer() const;
+        char* buffer() const;
+        void reserve(const std::size_t& new_capacity);
     private:
         omem_streambuf m_buffer;
     };

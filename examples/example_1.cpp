@@ -1,7 +1,7 @@
 #include <iostream>
-#include <sstream>
 #include <jbt/jbt.hpp>
-#include <lz4.h>
+#include <algorithm>
+#include <iomanip>
 
 void build_player(jbt::tag& player) {
     jbt::tag inventory(jbt::tag_type::LIST);
@@ -27,8 +27,9 @@ void build_player(jbt::tag& player) {
     inventory.add_tag(std::move(axe));
     inventory.add_tag(std::move(sword));
     inventory.add_tag(std::move(dirt));
+    inventory.add_int(123);
 
-    player.set_byte_array("avatar", { new int8_t[4*1024*1024], 4*1024*1024 });
+    player.set_byte_array("avatar", { new int8_t[4*1024*1024], 4*1024*1024, true });
 
     player.set_string("name", "qninh");
     player.set_ushort("health", 100);
@@ -46,37 +47,88 @@ void build_player(jbt::tag& player) {
     player.set_bool("is_sleeping", true);
 }
 
+void print_info(const jbt::hjbt_file& file) {
+    std::vector < std::pair<std::uint32_t, std::pair<std::int32_t, std::uint32_t>>> info_list;
+
+    auto cur = file.m_first_range;
+    while (cur) {
+        info_list.push_back({ cur->offset, { -1, cur->size } });
+        cur = cur->next;
+    }
+
+    for (const auto& [id, info] : file.m_info_map) {
+        const auto& [offset, size] = info;
+        info_list.push_back({ offset, { id, size } });
+    }   
+    std::sort(info_list.begin(), info_list.end());
+
+    for (const auto& [offset, info] : info_list) {
+        const auto& [id, size] = info;
+        if (id >= 0) {
+            std::cout << "[" << std::setw(1) << id << "]";
+        }
+        else {
+            std::cout << "[ ]";
+        }
+        std::cout << std::setw(4) << offset << " ->";
+        if (size) std::cout << std::setw(4) << size + offset << '\n'; else std::cout << std::setw(4) << " +oo\n";
+    }
+    std::cout << "--------------\n";
+
+}
+
+void build(jbt::tag& a_tag, std::uint32_t size) {
+    auto data = new int8_t[size];
+
+    for (int i = 0; i < size; ++i) data[i] = std::sin(i)*255+i;
+
+    a_tag.set_byte_array("data", { data , size, true });
+}
+
 int main() {
-    jbt::serializer* tool = new jbt::diff_endian_serializer();
-        
-    {
-        std::ofstream out("D:/github/jbt/lmao.dat", std::ios_base::binary | std::ios_base::out);
+    jbt::init();
+    //jbt::hjbt_util::create_empty_file("D:/github/jbt/cc.hjbt", 16, 64);
+    jbt::hjbt_file file("D:/github/jbt/cc.hjbt");
+    jbt::tag x(jbt::tag_type::OBJECT);
 
-        jbt::tag player(jbt::tag_type::OBJECT);
+    //std::cout << file.size() << '\n';
+    //file.begin_write();
+    //
+    //
+    //for (int i = 1; i < 10; ++i) {
+    //    build(x, i * 100);
+    //    file.write(i, x);
+    //}
+    //
+    //print_info(file);
+    //
+    //build(x, 1000);
+    //file.write(2, x);
+    //
+    //file.remove(4);
+    //file.remove(7);
+    //
+    //file.end_write();
 
-        build_player(player);
+    print_info(file);
 
-        jbt::compress_tag(*tool, out, player);
+    file.begin_write();
+    build(x, 10);
+    file.write(0, x);
 
-        out.close();
-    }
+    print_info(file);
 
-    // decompress
-    {
-        std::ifstream in("D:/github/jbt/lmao.dat", std::ios_base::binary | std::ios_base::in);
+    file.remove(3);
 
-        in.seekg(0, std::ios::end);
-        size_t compressed_size = in.tellg();
-        in.seekg(0, std::ios::beg);
+    print_info(file);
 
-        jbt::tag xplayer;
+    build(x, 2000);
+    file.write(9, x);
 
-        jbt::decompress_tag(*tool, in, xplayer, compressed_size, 8 * 1024 * 1024);
+    print_info(file);
 
-        std::cout << xplayer << '\n';
+    file.remove(8);
 
-        in.close();
-    }
-    while (1);
-    std::cout << "done\n";
+    print_info(file);
+
 }

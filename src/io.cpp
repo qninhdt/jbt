@@ -66,7 +66,7 @@ namespace jbt {
         return m_capacity;
     }
 
-    const char* omem_streambuf::buffer() const {
+    char* omem_streambuf::buffer() const {
         return m_buffer;
     }
     
@@ -82,7 +82,11 @@ namespace jbt {
         return m_buffer.size();
     }
 
-    const char* omem_stream::buffer() const {
+    char* omem_stream::buffer() const {
         return m_buffer.buffer();
+    }
+
+    void omem_stream::reserve(const std::size_t& new_capacity) {
+        m_buffer.reserve(new_capacity);
     }
 }

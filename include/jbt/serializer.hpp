@@ -51,6 +51,8 @@ namespace jbt {
 		void write_tag_type(std::ostream& output, const tag_type& value);
 		void write_byte_array(std::ostream& output, const byte_array_t& value);
 		void write_and_delete_tag(); /// TODO: implement later
+
+		static serializer* instance;
 	};
 
 	class diff_endian_serializer : public serializer {

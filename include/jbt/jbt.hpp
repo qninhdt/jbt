@@ -6,10 +6,12 @@
 #include "jbt/tag.hpp"
 #include "jbt/io.hpp"
 #include "jbt/compression.hpp"
+#include "jbt/file.hpp"
+#include "jbt/hjbt.hpp"
 
 namespace jbt {
 
-
+    void init();
 
 }
 

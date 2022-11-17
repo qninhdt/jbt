@@ -4,6 +4,8 @@
 
 namespace jbt {
 
+	serializer* serializer::instance;
+
 	void serializer_util::swap_2_bytes(char* number) {
 		std::swap(number[0], number[1]);
 	}
@@ -150,6 +152,7 @@ namespace jbt {
 	void serializer::read_byte_array(std::istream& input, byte_array_t& result) {
 		read_uint(input, result.size);
 		result.data = new int8_t[result.size];
+		result.is_owner = true;
 		input.read(reinterpret_cast<char*>(result.data), result.size);
 	}
 

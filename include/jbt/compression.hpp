@@ -2,11 +2,16 @@
 #define JBT_COMPRESSION_H
 
 #include "jbt/internal.hpp"
+#include "jbt/io.hpp"
 
 namespace jbt {
 
-    std::size_t compress_tag(serializer& ser, std::ostream& dst, const tag& src);
-    void decompress_tag(serializer& ser, std::istream& src, tag& dst, const std::size_t& src_size, const std::size_t& dst_size);
+    class compression_util {
+    public:
+        static std::uint32_t compress_tag(serializer& ser, const tag& src, omem_stream& dst);
+        static std::uint32_t compress_tag(serializer& ser, const tag& src, std::ostream& dst);
+        static void decompress_tag(serializer& ser, std::istream& src, tag& dst);
+    };
 }
 
-#endif // JBT_COMPRESSION_H
+#endif // !JBT_COMPRESSION_H
