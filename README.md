@@ -49,7 +49,7 @@ int main() {
 ```
 
 ## Output
-```
+```js
 {
     health: 100us,
     inventory: [
