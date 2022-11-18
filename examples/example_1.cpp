@@ -29,7 +29,12 @@ void build_player(jbt::tag& player) {
     inventory.add_tag(std::move(dirt));
     inventory.add_int(123);
 
-    player.set_byte_array("avatar", { new int8_t[4*1024*1024], 4*1024*1024, true });
+    auto data = new int8_t[4 * 1024 * 1024];
+    player.set_byte_array("avatar", { data, 4*1024*1024, true });
+
+    for (int i = 0; i < 4 * 1024 * 1024; ++i) {
+        data[i] = std::sin(i)*100;
+    }
 
     player.set_string("name", "qninh");
     player.set_ushort("health", 100);
@@ -74,62 +79,69 @@ void print_info(const jbt::hjbt_file& file) {
         if (size) std::cout << std::setw(4) << size + offset << '\n'; else std::cout << std::setw(4) << " +oo\n";
     }
     std::cout << "--------------\n";
-
 }
 
-void build(jbt::tag& a_tag, std::uint32_t size) {
+void build(jbt::tag& a_tag, int id) {
+    const auto size = 32 * 32 * 32;
     auto data = new int8_t[size];
 
-    for (int i = 0; i < size; ++i) data[i] = std::sin(i)*255+i;
+    for (int i = 0; i < size; ++i) {
+        if (id % 3 != 1) {
+            if (i % 5 == 0) {
+                data[i] = sin(i) * 255 + i;
+            } else {
+                data[i] = 1;
+            }
+        }
+    }
 
-    a_tag.set_byte_array("data", { data , size, true });
+    if (id % 3 != 1)
+        a_tag.set_byte_array("blocks", { data , size, true });
+    
 }
 
 int main() {
     jbt::init();
-    //jbt::hjbt_util::create_empty_file("D:/github/jbt/cc.hjbt", 16, 64);
+
+    {
+        jbt::tag player(jbt::tag_type::OBJECT);
+        build_player(player);    
+        jbt::save_tag(player, "D:/github/jbt/player.jbt");
+    }
+
+    jbt::hjbt_util::create_empty_file("D:/github/jbt/cc.hjbt", 16*16*16, 2048);
     jbt::hjbt_file file("D:/github/jbt/cc.hjbt");
-    jbt::tag x(jbt::tag_type::OBJECT);
+    
+    jbt::tag chunks[16*16*16];
+    for (int i = 0; i < 16 * 16 * 16; ++i) {
+        chunks[i] = { jbt::tag_type::OBJECT };
+        build(chunks[i], i);
+    }
 
-    //std::cout << file.size() << '\n';
-    //file.begin_write();
-    //
-    //
-    //for (int i = 1; i < 10; ++i) {
-    //    build(x, i * 100);
-    //    file.write(i, x);
-    //}
-    //
-    //print_info(file);
-    //
-    //build(x, 1000);
-    //file.write(2, x);
-    //
-    //file.remove(4);
-    //file.remove(7);
-    //
-    //file.end_write();
-
-    print_info(file);
-
+    const clock_t begin_time = clock();
+    // do something
+    std::cout << "Built.\n";
     file.begin_write();
-    build(x, 10);
-    file.write(0, x);
 
-    print_info(file);
+    jbt::omem_stream cc;
+    for (int i = 0; i < 16 * 16 * 16; ++i) {
+        jbt::tag x(jbt::tag_type::OBJECT);
+        file.write(i, chunks[i]);
+    }
 
-    file.remove(3);
+    file.end_write();
 
-    print_info(file);
+    std::cout << double(clock() - begin_time) / CLOCKS_PER_SEC << '\n';
+    
+    jbt::tag x(jbt::tag_type::OBJECT);
+    //file.read(101, x);
+    std::cout << x << '\n';
 
-    build(x, 2000);
-    file.write(9, x);
-
-    print_info(file);
-
-    file.remove(8);
-
-    print_info(file);
+    {
+        jbt::tag player;
+        jbt::open_tag(player, "D:/github/jbt/player.jbt");
+        std::cout << player << '\n';
+    }
 
     file.close();
 }

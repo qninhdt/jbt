@@ -150,14 +150,17 @@ namespace jbt {
     }
 
     void hjbt_file::read(const std::uint32_t& tag_id, tag& dst) {
+        assert(m_info_map.find(tag_id) != m_info_map.end());
 
+        m_in_stream->seekg((std::uint64_t) (m_header_size + m_info_map[tag_id].first) * m_block_size, std::ios_base::beg);
+        compression_util::decompress_tag(*serializer::instance, *m_in_stream, dst);
     }
 
     void hjbt_file::write(const std::uint32_t& tag_id, const tag& src) {
         assert(tag_id < m_max_size && "Out of bounds");
         
         omem_stream src_stream;
-        
+
         const std::uint32_t new_memory_size = compression_util::compress_tag(*serializer::instance, src, src_stream);
 
         const std::uint32_t new_size = (new_memory_size / m_block_size) + (new_memory_size % m_block_size != 0);
@@ -179,30 +182,40 @@ namespace jbt {
             hjbt_free_range* curr = m_first_range;
 
             while (curr->size < new_size && curr->size != 0) {
-                prev = curr;
+                hjbt_free_range* temp = curr;
                 curr = curr->next;
+                prev = temp;
             }
 
-            m_info_map[tag_id] = { curr->offset, new_size };
+            if (curr) {
+                m_info_map[tag_id] = { curr->offset, new_size };
 
-            if (curr->size == new_size) {
-                // remove current free range
-                if (prev) {
-                    prev->next = curr->next;
+                if (curr->size == new_size) {
+                    // remove current free range
+                    if (prev) {
+                        prev->next = curr->next;
+                    } else {
+                        m_first_range = curr->next;
+                    }
+                    delete curr;
                 } else {
-                    m_first_range = curr->next;
-                }
-                delete curr;
-            } else {
-                curr->offset += new_size;
-                if (curr->size != 0) {
-                    curr->size -= new_size;
+                    curr->offset += new_size;
+                    if (curr->size != 0) {
+                        curr->size -= new_size;
+                    }
                 }
             }
         }
 
         m_out_stream->seekp((std::uint64_t) (m_header_size + m_info_map[tag_id].first) * m_block_size, std::ios_base::beg);
-        m_out_stream->write(src_stream.buffer(), m_info_map[tag_id].second);
+        //m_out_stream->write(src_stream.buffer(), new_memory_size);
+        std::uint32_t size = m_block_size;
+        for (int i = 0; i < new_memory_size; i += m_block_size) {
+            if (new_memory_size - i < m_block_size) {
+                size = new_memory_size - i;
+            }
+            m_out_stream->write(src_stream.buffer(), size);
+        }
     }
 
     void hjbt_file::remove(const std::uint32_t& tag_id) {
